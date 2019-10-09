@@ -6,7 +6,7 @@ SRCDIR := src
 BUILDDIR := build
 TARGETDIR := bin
 
-EXECUTABLE := nand2tetris
+EXECUTABLE := nand
 TARGET := $(TARGETDIR)/$(EXECUTABLE)
 
 INSTALLBINDIR := /usr/local/bin
@@ -15,13 +15,12 @@ SRCEXT := cpp
 SOURCES := $(shell find $(SRCDIR) -type f -name *.$(SRCEXT))
 OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 
-# uncomment once we have some includes
 # INCDIRS := $(shell find include/**/* -name '*.h' -exec dirname {} \; | sort | uniq)
 # INCLIST := $(patsubst include/%,-I include/%,$(INCDIRS))
-INCLIST :=
+INCLIST := ""
 BUILDLIST := $(patsubst include/%,$(BUILDDIR)/%,$(INCDIRS))
 
-CFLAGS := -c -std=c++17 -O2
+CFLAGS := -c -std=c++17 -O0 -Wall
 INC := -I include $(INCLIST) -I /usr/local/include
 LIB := -L /usr/local/lib
 
@@ -30,18 +29,18 @@ ifneq ($(UNAME_S),Linux)
 endif
 
 $(TARGET): $(OBJECTS)
-ifdef TARGETDIR
 	@mkdir -p $(TARGETDIR)
-endif
 	@echo "Linking..."
-	@echo "  Linking $(TARGET)"; $(CC) $^ -o $(TARGET) $(LIB)
+	@echo "  Linking $(TARGET)";
+	$(CC) $^ -o $(TARGET) $(LIB)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	@mkdir -p $(BUILDDIR)
 ifdef BUILDLIST
 	@mkdir -p $(BUILDLIST)
 endif
-	@echo "Compiling $<..."; $(CC) $(CFLAGS) $(INC) -c -o $@ $<
+	@echo "Compiling $<..."
+	$(CC) $(CFLAGS) $(INC) -c -o $@ $<
 
 clean:
 	@echo "Cleaning $(TARGET)..."; $(RM) -r $(BUILDDIR) $(TARGET)
