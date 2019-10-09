@@ -51,4 +51,7 @@ install:
 distclean:
 	@echo "Removing $(EXECUTABLE)"; rm $(INSTALLBINDIR)/$(EXECUTABLE)
 
+run: $(TARGET)
+	@bin/nand
+
 .PHONY: clean
