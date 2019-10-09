@@ -16,8 +16,15 @@ int main(int argc, char** argv) {
     new_argv.push_back("--help");
   }
 
-  CLI::App* assemble = app.add_subcommand("assemble", "Assemble .asm code to .hack binaries");
-  assemble->callback(assemble::assemble);
+  std::string input_filepath, output_filepath;
+
+  CLI::App* assemble_command = app.add_subcommand("assemble", "Assemble .asm code to .hack binaries");
+  assemble_command->add_option("input", input_filepath, ".asm file to assemble")->required();
+  assemble_command->add_option("output", output_filepath, ".hack file to output")->required();
+
+  assemble_command->callback(([&input_filepath, &output_filepath]{
+    assemble::assemble(std::move(input_filepath), std::move(output_filepath));
+  }));
 
   CLI11_PARSE(app, argc, new_argv.data());
 

@@ -1,0 +1,7 @@
+-target=x86_64-pc-linux-gnu
+-c
+-std=c++17
+-O0
+-Wall
+-Iinclude
+-I/usr/local/include

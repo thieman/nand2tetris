@@ -1,3 +1,3 @@
 namespace assemble {
-  void assemble();
+  void assemble(std::string, std::string);
 }
