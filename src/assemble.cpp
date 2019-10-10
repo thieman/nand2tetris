@@ -66,6 +66,7 @@ namespace assemble {
 
   SymbolMap buildUserSymbols(std::vector<parse::Instruction> instructions) {
     SymbolMap table;
+    table["__variables_defined"] = 0;
 
     uint current_address = 0;
     for (auto instruction : instructions) {
@@ -79,12 +80,21 @@ namespace assemble {
     return table;
   }
 
-  int resolve_symbol(const SymbolMap& user_symbols, std::string name) {
+  int resolve_symbol(SymbolMap& user_symbols, std::string name) {
     auto builtin_hit = built_in_symbols.find(name);
     if (builtin_hit != built_in_symbols.end()) { return builtin_hit->second; }
     auto user_hit = user_symbols.find(name);
     if (user_hit != user_symbols.end()) { return user_hit->second; }
-    throw std::out_of_range("Could not find reference to symbol " + name);
+
+    // Variable symbols. Any symbol Xxx appearing in an assembly program that is
+    // not predefined and is not defined elsewhere using the (Xxx) command is treated as
+    // a variable. Variables are mapped to consecutive memory locations as they are first
+    // encountered, starting at RAM address 16 (0x0010).
+    int variables_defined = user_symbols.at("__variables_defined");
+    const int variable_value = 16 + variables_defined;
+    user_symbols.insert(std::pair<std::string, int>(name, variable_value));
+    user_symbols["__variables_defined"]++;
+    return variable_value;
   }
 
   std::vector<std::string> assemble_to_strings(std::vector<parse::Instruction> instructions, SymbolMap user_symbols) {
