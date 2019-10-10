@@ -96,7 +96,6 @@ namespace parse {
       return cinst;
     }
     
-    std::cout << line << std::endl;
     return std::nullopt;
   }
 
@@ -112,7 +111,6 @@ namespace parse {
     while (std::getline(input_file, line)) {
       auto parsed_line = parseLine(line);
       if (parsed_line.has_value()) {
-        print(parsed_line.value());
         parsed.push_back(parsed_line.value());
       }
     }    
