@@ -6,6 +6,7 @@
 #include <map>
 
 #include <boost/format.hpp>
+#include "overloaded.hpp"
 
 /* 
 Grammar
@@ -16,9 +17,6 @@ C-instruction: dest=comp;jump
                If jump is empty, omit ;
 Label: (labelname)
 */
-
-template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-template<class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
 
 namespace parse {
   enum Jump { JGT, JEQ, JGE, JLT, JNE, JLE, JMP };
