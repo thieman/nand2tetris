@@ -21,7 +21,7 @@ INCLIST := "src/lib"
 BUILDLIST := $(patsubst include/%,$(BUILDDIR)/%,$(INCDIRS))
 
 CFLAGS := -c -std=c++17 -O0 -Wall
-INC := -I $(INCLIST) -I /usr/local/include
+INC := -I include -I $(INCLIST) -I /usr/local/include
 LIB := -L /usr/local/lib
 
 ifneq ($(UNAME_S),Linux)
