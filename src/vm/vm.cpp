@@ -98,7 +98,9 @@ namespace vm {
                     case vmParse::MemorySegment::TEMP:           
                         return simplePop("5", true, bytecode->value);                                 
                     case vmParse::MemorySegment::POINTER:                        
-                        break;
+                        return {
+                            "@SP", "M=M-1", "A=M", "D=M", "@" + std::to_string(3 + bytecode->value), "M=D",
+                        };
                     default:
                         throw std::out_of_range("Unreachable condition");                                    
                 }
@@ -122,7 +124,10 @@ namespace vm {
                     case vmParse::MemorySegment::TEMP:                        
                         return simplePush("5", true, bytecode->value);                    
                     case vmParse::MemorySegment::POINTER:                        
-                        break;
+                        return {
+                            "@" + std::to_string(3 + bytecode->value), "D=M", "@SP", "M=M+1",
+                            "A=M-1", "M=D",
+                        };                                             
                     default:
                         throw std::out_of_range("Unreachable condition");                                    
                 }
