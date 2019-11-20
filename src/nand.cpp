@@ -3,6 +3,7 @@
 #include <CLI11.hpp>
 
 #include "assemble/assemble.hpp"
+#include "vm/vm.hpp"
 
 int main(int argc, char** argv) {
   CLI::App app{"nand2tetris"};
@@ -18,12 +19,20 @@ int main(int argc, char** argv) {
 
   std::string input_filepath, output_filepath;
 
-  CLI::App* assemble_command = app.add_subcommand("assemble", "Assemble .asm code to .hack binaries");
+  CLI::App* assemble_command = app.add_subcommand("assemble", "Assemble .asm assembly to .hack binaries");
   assemble_command->add_option("input", input_filepath, ".asm file to assemble")->required();
   assemble_command->add_option("output", output_filepath, ".hack file to output")->required();
 
   assemble_command->callback(([&input_filepath, &output_filepath]{
     assemble::assemble(std::move(input_filepath), std::move(output_filepath));
+  }));
+
+  CLI::App* vm_command = app.add_subcommand("vm", "Assemble VM code to .asm assembly");
+  vm_command->add_option("input", input_filepath, ".vm file to translate")->required();
+  vm_command->add_option("output", output_filepath, ".asm file to output")->required();
+  
+  vm_command->callback(([&input_filepath, &output_filepath]{
+    vm::vm(std::move(input_filepath), std::move(output_filepath));
   }));
 
   CLI11_PARSE(app, argc, new_argv.data());
