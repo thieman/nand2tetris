@@ -17,11 +17,11 @@ OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
 
 # INCDIRS := $(shell find include/**/* -name '*.h' -exec dirname {} \; | sort | uniq)
 # INCLIST := $(patsubst include/%,-I include/%,$(INCDIRS))
-INCLIST := ""
+INCLIST := "src/lib"
 BUILDLIST := $(patsubst include/%,$(BUILDDIR)/%,$(INCDIRS))
 
 CFLAGS := -c -std=c++17 -O0 -Wall
-INC := -I include $(INCLIST) -I /usr/local/include
+INC := -I $(INCLIST) -I /usr/local/include
 LIB := -L /usr/local/lib
 
 ifneq ($(UNAME_S),Linux)
@@ -29,13 +29,13 @@ ifneq ($(UNAME_S),Linux)
 endif
 
 $(TARGET): $(OBJECTS)
-	@mkdir -p $(TARGETDIR)
+	@mkdir -p $(@D)
 	@echo "Linking..."
 	@echo "  Linking $(TARGET)";
 	$(CC) $^ -o $(TARGET) $(LIB)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
-	@mkdir -p $(BUILDDIR)
+	@mkdir -p $(@D)
 ifdef BUILDLIST
 	@mkdir -p $(BUILDLIST)
 endif

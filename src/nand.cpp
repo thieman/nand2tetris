@@ -2,7 +2,7 @@
 
 #include <CLI11.hpp>
 
-#include "assemble.hpp"
+#include "assemble/assemble.hpp"
 
 int main(int argc, char** argv) {
   CLI::App app{"nand2tetris"};
