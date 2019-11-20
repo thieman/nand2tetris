@@ -66,24 +66,66 @@ namespace vm {
         return result;
     }
 
+    std::vector<std::string> simplePop(std::string reg, bool exactAddress, unsigned int value) {
+        return {"@" + reg, exactAddress ? "D=A" : "D=M", "@" + std::to_string(value),
+                "D=D+A", "@R15", "M=D", "@SP", "M=M-1", "A=M", "D=M",
+                "@R15", "A=M", "M=D"};
+    }
+
+    std::vector<std::string> simplePush(std::string reg, bool exactAddress, unsigned int value) {
+        return {"@" + reg, exactAddress ? "D=A" : "D=M", "@" + std::to_string(value),
+                "A=D+A", "D=M", "@SP", "A=M", "M=D", "@SP", "M=M+1"};
+    }    
+
     std::vector<std::string> translateToStrings(vmParse::MemoryBytecode *bytecode) {
-        std::vector<std::string> result;                
+        std::vector<std::string> result;        
 
         switch(bytecode->command) {
             case vmParse::MemoryCommand::POP:
-                break;
+                switch(bytecode->segment) {
+                    case vmParse::MemorySegment::LOCAL:
+                        return simplePop("LCL", false, bytecode->value);
+                    case vmParse::MemorySegment::ARGUMENT:
+                        return simplePop("ARG", false, bytecode->value);
+                    case vmParse::MemorySegment::THIS:                     
+                        return simplePop("THIS", false, bytecode->value);
+                    case vmParse::MemorySegment::THAT:                        
+                        return simplePop("THAT", false, bytecode->value);
+                    case vmParse::MemorySegment::CONSTANT:
+                        throw std::out_of_range("Cannot pop constant");
+                    case vmParse::MemorySegment::STATIC:                        
+                        break;
+                    case vmParse::MemorySegment::TEMP:           
+                        return simplePop("5", true, bytecode->value);                                 
+                    case vmParse::MemorySegment::POINTER:                        
+                        break;
+                    default:
+                        throw std::out_of_range("Unreachable condition");                                    
+                }
             case vmParse::MemoryCommand::PUSH:
                 switch(bytecode->segment) {
+                    case vmParse::MemorySegment::LOCAL:
+                        return simplePush("LCL", false, bytecode->value);
+                    case vmParse::MemorySegment::ARGUMENT:
+                        return simplePush("ARG", false, bytecode->value);
+                    case vmParse::MemorySegment::THIS:                     
+                        return simplePush("THIS", false, bytecode->value);
+                    case vmParse::MemorySegment::THAT:                        
+                        return simplePush("THAT", false, bytecode->value);
                     case vmParse::MemorySegment::CONSTANT:
                         return std::vector<std::string> {
                             "@" + std::to_string(bytecode->value), "D=A", "@SP",
                             "A=M", "M=D", "@SP", "M=M+1"
-                        };
+                        };                        
+                    case vmParse::MemorySegment::STATIC:                        
+                        break;
+                    case vmParse::MemorySegment::TEMP:                        
+                        return simplePush("5", true, bytecode->value);                    
+                    case vmParse::MemorySegment::POINTER:                        
+                        break;
                     default:
                         throw std::out_of_range("Unreachable condition");                                    
                 }
-
-                break;
             default:
                 throw std::out_of_range("Unreachable condition");            
         }
