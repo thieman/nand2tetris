@@ -5,7 +5,7 @@
 #include "parse.hpp"
 
 namespace vm {
-    std::vector<std::string> translateToStrings(vmParse::LogicBytecode *bytecode) {
+    std::vector<std::string> translateToStrings(vmParse::LogicBytecode *bytecode, unsigned int &currentLabel) {
         std::vector<std::string> result;        
         switch(bytecode->command) {
             case vmParse::LogicCommand::ADD:
@@ -14,21 +14,51 @@ namespace vm {
                     "A=A-1", "M=M+D"
                 };
             case vmParse::LogicCommand::SUB:
-                break;
+                return std::vector<std::string> {
+                    "@SP", "M=M-1", "A=M", "D=M",
+                    "A=A-1", "M=M-D"
+                };
             case vmParse::LogicCommand::NEG:
-                break;
+                return std::vector<std::string> {
+                    "@SP", "A=M-1", "M=-M",
+                };
             case vmParse::LogicCommand::EQ:
-                break;
+                currentLabel++;
+                return std::vector<std::string> {
+                    "@SP", "M=M-1", "A=M", "D=M",
+                    "A=A-1", "D=M-D", "M=-1", "@eqlabel_" + std::to_string(currentLabel),
+                    "D;JEQ", "@SP", "A=M-1", "M=0", "(eqlabel_" + std::to_string(currentLabel) + ")"
+                };
             case vmParse::LogicCommand::GT:
-                break;
+                currentLabel++;
+                return std::vector<std::string> {
+                    "@SP", "M=M-1", "A=M", "D=M",
+                    "A=A-1", "D=M-D", "M=-1", "@gtlabel_" + std::to_string(currentLabel),
+                    "D;JGT", "@SP", "A=M-1", "M=0", "(gtlabel_" + std::to_string(currentLabel) + ")"
+                };            
             case vmParse::LogicCommand::LT:
-                break;
+                currentLabel++;
+                return std::vector<std::string> {
+                    "@SP", "M=M-1", "A=M", "D=M",
+                    "A=A-1", "D=M-D", "M=-1", "@ltlabel_" + std::to_string(currentLabel),
+                    "D;JLT", "@SP", "A=M-1", "M=0", "(ltlabel_" + std::to_string(currentLabel) + ")"
+                };                        
             case vmParse::LogicCommand::AND:
-                break;
+                currentLabel++;
+                return std::vector<std::string> {
+                    "@SP", "M=M-1", "A=M", "D=M",
+                    "A=A-1", "M=D&M"
+                };            
             case vmParse::LogicCommand::OR:
-                break;         
+                currentLabel++;
+                return std::vector<std::string> {
+                    "@SP", "M=M-1", "A=M", "D=M",
+                    "A=A-1", "M=D|M"
+                };                                     
             case vmParse::LogicCommand::NOT:
-                break;                      
+                return std::vector<std::string> {
+                    "@SP", "A=M-1", "M=!M"  
+                };                
             default:
                 throw std::out_of_range("Unreachable condition");
         }
@@ -62,10 +92,12 @@ namespace vm {
     }
 
     std::vector<std::string> translateToStrings(std::vector<vmParse::Bytecode> bytecodes) {
+        unsigned int currentLabel = 0;        
         std::vector<std::string> result;
+
         for (auto bytecode : bytecodes) {
             if (auto b = std::get_if<vmParse::LogicBytecode>(&bytecode)) {
-                auto bStrings = translateToStrings(b);
+                auto bStrings = translateToStrings(b, currentLabel);
                 result.insert(result.end(), bStrings.begin(), bStrings.end());
             } else if (auto b = std::get_if<vmParse::MemoryBytecode>(&bytecode)) {
                 auto bStrings = translateToStrings(b);
